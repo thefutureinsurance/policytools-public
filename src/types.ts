@@ -1,6 +1,7 @@
 export interface HouseholdMember {
   age: number;
   female: boolean;
+  dateOfBirth: string;
 }
 
 export interface HouseholdFormValues {

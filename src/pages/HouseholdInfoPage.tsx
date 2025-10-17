@@ -3,8 +3,9 @@ import { HouseholdFormValues } from "../types";
 import { useTranslation } from "../i18n/I18nProvider";
 
 interface FormMemberState {
-  age: string;
+  dateOfBirth: string;
   female: boolean;
+  computedAge: number | null;
 }
 
 interface FormState {
@@ -19,13 +20,46 @@ interface HouseholdInfoPageProps {
   onSubmit: (values: HouseholdFormValues) => void;
 }
 
+const calculateAge = (dateString: string): number | null => {
+  if (!dateString) {
+    return null;
+  }
+  const parsedDate = new Date(dateString);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - parsedDate.getFullYear();
+  const monthDiff = today.getMonth() - parsedDate.getMonth();
+
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < parsedDate.getDate())
+  ) {
+    age -= 1;
+  }
+
+  if (age < 0 || age > 120) {
+    return null;
+  }
+
+  return age;
+};
+
 const mapInitialValues = (values: HouseholdFormValues): FormState => {
   const quantity = Math.max(values.memberQuantity || 1, 1);
   const members =
     values.members?.length === quantity
       ? values.members
       : Array.from({ length: quantity }, (_, index) => {
-          return values.members?.[index] ?? { age: 0, female: false };
+          return (
+            values.members?.[index] ?? {
+              age: 0,
+              female: false,
+              dateOfBirth: "",
+            }
+          );
         });
 
   return {
@@ -35,10 +69,26 @@ const mapInitialValues = (values: HouseholdFormValues): FormState => {
         ? String(values.householdIncome)
         : "",
     memberQuantity: quantity,
-    members: members.map((member) => ({
-      age: member.age ? String(member.age) : "",
-      female: Boolean(member.female),
-    })),
+    members: members.map((member) => {
+      const ageFromDob = member.dateOfBirth
+        ? calculateAge(member.dateOfBirth)
+        : null;
+      const hasNumericAge =
+        typeof member.age === "number" && Number.isFinite(member.age);
+      const fallbackAge =
+        ageFromDob !== null
+          ? ageFromDob
+          : hasNumericAge
+          ? member.age
+          : null;
+
+      return {
+        dateOfBirth: member.dateOfBirth ?? "",
+        female: Boolean(member.female),
+        computedAge:
+          fallbackAge !== null && fallbackAge >= 0 ? fallbackAge : null,
+      };
+    }),
   };
 };
 
@@ -55,6 +105,11 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
   useEffect(() => {
     setFormState(mapInitialValues(initialValues));
   }, [initialValues]);
+
+  const today = useMemo(
+    () => new Date().toISOString().split("T")[0],
+    []
+  );
 
   const membersLabel = useMemo(
     () =>
@@ -84,8 +139,9 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
       if (difference > 0) {
         currentMembers.push(
           ...Array.from({ length: difference }, () => ({
-            age: "",
+            dateOfBirth: "",
             female: false,
+            computedAge: null,
           }))
         );
       }
@@ -98,18 +154,32 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
     });
   };
 
-  const handleMemberFieldChange = (
-    index: number,
-    key: keyof FormMemberState,
-    value: string
-  ) => {
+  const handleMemberDateChange = (index: number, value: string) => {
     setFormState((prev) => {
       const updatedMembers = prev.members.map((member, memberIndex) =>
         memberIndex === index
           ? {
               ...member,
-              [key]:
-                key === "female" ? value === "true" : value.replace(/\D/g, ""),
+              dateOfBirth: value,
+              computedAge: calculateAge(value),
+            }
+          : member
+      );
+
+      return {
+        ...prev,
+        members: updatedMembers,
+      };
+    });
+  };
+
+  const handleMemberGenderChange = (index: number, value: string) => {
+    setFormState((prev) => {
+      const updatedMembers = prev.members.map((member, memberIndex) =>
+        memberIndex === index
+          ? {
+              ...member,
+              female: value === "true",
             }
           : member
       );
@@ -132,12 +202,19 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
       return t("householdForm.errors.income");
     }
 
-    const someInvalidMember = state.members.some((member) => {
-      const age = Number(member.age);
-      return !Number.isFinite(age) || age <= 0 || age > 120;
-    });
+    const missingDob = state.members.some(
+      (member) => !member.dateOfBirth || !member.dateOfBirth.trim()
+    );
 
-    if (someInvalidMember) {
+    if (missingDob) {
+      return t("householdForm.errors.memberDob");
+    }
+
+    const invalidAge = state.members.some(
+      (member) => member.computedAge === null || member.computedAge <= 0
+    );
+
+    if (invalidAge) {
       return t("householdForm.errors.memberAge");
     }
 
@@ -155,10 +232,16 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
       return;
     }
 
-    const sanitizedMembers = formState.members.map((member) => ({
-      age: Number(member.age),
-      female: Boolean(member.female),
-    }));
+    const sanitizedMembers = formState.members.map((member) => {
+      const computedAge =
+        member.computedAge ?? calculateAge(member.dateOfBirth) ?? 0;
+
+      return {
+        age: computedAge,
+        female: Boolean(member.female),
+        dateOfBirth: member.dateOfBirth,
+      };
+    });
 
     onSubmit({
       zipCode: formState.zipCode.trim(),
@@ -217,43 +300,50 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
         <p className="section-helper">{t("householdForm.membersHelper")}</p>
 
         <div className="member-grid">
-          {formState.members.map((member, index) => (
-            <div className="member-card" key={`member-${index}`}>
-              <h4>
-                {t("householdForm.memberHeading", { number: index + 1 })}
-              </h4>
-              <label className="form-field">
-                <span>{t("householdForm.ageLabel")}</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={120}
-                  value={member.age}
-                  onChange={(event) =>
-                    handleMemberFieldChange(
-                      index,
-                      "age",
-                      event.target.value.slice(0, 3)
-                    )
-                  }
-                  placeholder={t("householdForm.agePlaceholder")}
-                />
-              </label>
+          {formState.members.map((member, index) => {
+            const ageLabel =
+              member.computedAge !== null
+                ? t("householdForm.ageComputed", {
+                    age: member.computedAge,
+                  })
+                : t("householdForm.agePending");
 
-              <label className="form-field">
-                <span>{t("householdForm.genderLabel")}</span>
-                <select
-                  value={String(member.female)}
-                  onChange={(event) =>
-                    handleMemberFieldChange(index, "female", event.target.value)
-                  }
-                >
-                  <option value="false">{t("genders.male")}</option>
-                  <option value="true">{t("genders.female")}</option>
-                </select>
-              </label>
-            </div>
-          ))}
+            return (
+              <div className="member-card" key={`member-${index}`}>
+                <h4>
+                  {t("householdForm.memberHeading", { number: index + 1 })}
+                </h4>
+
+                <label className="form-field">
+                  <span>{t("householdForm.dateOfBirthLabel")}</span>
+                  <input
+                    type="date"
+                    max={today}
+                    value={member.dateOfBirth}
+                    onChange={(event) =>
+                      handleMemberDateChange(index, event.target.value)
+                    }
+                    placeholder={t("householdForm.dateOfBirthPlaceholder")}
+                  />
+                </label>
+
+                <div className="computed-age-label">{ageLabel}</div>
+
+                <label className="form-field">
+                  <span>{t("householdForm.genderLabel")}</span>
+                  <select
+                    value={String(member.female)}
+                    onChange={(event) =>
+                      handleMemberGenderChange(index, event.target.value)
+                    }
+                  >
+                    <option value="false">{t("genders.male")}</option>
+                    <option value="true">{t("genders.female")}</option>
+                  </select>
+                </label>
+              </div>
+            );
+          })}
         </div>
       </div>
 

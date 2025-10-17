@@ -13,6 +13,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       subtitle:
         "Acompañamos a tu hogar para encontrar la mejor cobertura médica.",
       languageLabel: "Idioma",
+      languageToggleLabel: "Cambiar idioma a {{language}}",
       options: {
         es: "Español",
         en: "Inglés",
@@ -26,10 +27,10 @@ export const translations: Record<Language, TranslationDictionary> = {
     },
     footer: {
       line1:
-        "Request, Calls and Invitations for applications for insurance on this website are made through Max Capital 97 LLC, only where licensed and appointed.",
+        "Las solicitudes, llamadas e invitaciones de seguros en este sitio se realizan a través de Max Capital 97 LLC, sólo donde está licenciada y designada.",
       line2:
-        " Max Capital 97 LLC National Producer Number is 19966989 and its state license numbers are set forth below.",
-      line3: "Copyright ©2025 | The Future Insurance. All rights reserved.",
+        "El Número Nacional de Productor de Max Capital 97 LLC es 19966989 y sus licencias estatales se detallan a continuación.",
+      line3: "Copyright ©2025 | The Future Insurance. Todos los derechos reservados.",
     },
     buttons: {
       back: "Volver",
@@ -55,10 +56,15 @@ export const translations: Record<Language, TranslationDictionary> = {
       agePlaceholder: "Ej: 34",
       genderLabel: "Género",
       memberHeading: "Integrante #{{number}}",
+      dateOfBirthLabel: "Fecha de nacimiento",
+      dateOfBirthPlaceholder: "Seleccioná una fecha",
+      ageComputed: "Edad: {{age}} años",
+      agePending: "Ingresá la fecha de nacimiento para calcular la edad.",
       errors: {
         zipCode: "Ingresá un código postal válido.",
         income: "Ingresá un ingreso familiar mensual mayor a cero.",
         memberAge: "Verificá las edades de cada integrante del hogar.",
+        memberDob: "Ingresá la fecha de nacimiento de cada integrante del hogar.",
       },
     },
     genders: {
@@ -116,6 +122,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       title: "TFI Marketplace",
       subtitle: "We guide your household to find the best health coverage.",
       languageLabel: "Language",
+      languageToggleLabel: "Switch language to {{language}}",
       options: {
         es: "Spanish",
         en: "English",
@@ -127,7 +134,13 @@ export const translations: Record<Language, TranslationDictionary> = {
       details: "Complete the primary contact details",
       confirmation: "Confirmation",
     },
-    footer: "Coverage offered together with the TFI insurance marketplace.",
+    footer: {
+      line1:
+        "Requests, calls, and invitations for insurance on this website are made through Max Capital 97 LLC, only where licensed and appointed.",
+      line2:
+        "Max Capital 97 LLC National Producer Number is 19966989 and its state license numbers are listed below.",
+      line3: "Copyright ©2025 | The Future Insurance. All rights reserved.",
+    },
     buttons: {
       back: "Back",
       continue: "Continue",
@@ -152,10 +165,15 @@ export const translations: Record<Language, TranslationDictionary> = {
       agePlaceholder: "E.g. 34",
       genderLabel: "Gender",
       memberHeading: "Member #{{number}}",
+      dateOfBirthLabel: "Date of birth",
+      dateOfBirthPlaceholder: "Select a date",
+      ageComputed: "Age: {{age}} years",
+      agePending: "Enter the date of birth to calculate the age.",
       errors: {
         zipCode: "Enter a valid zip code.",
         income: "Enter a monthly household income greater than zero.",
         memberAge: "Review each household member's age.",
+        memberDob: "Enter the date of birth for each household member.",
       },
     },
     genders: {

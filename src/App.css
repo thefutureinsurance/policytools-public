@@ -50,37 +50,36 @@ body {
 
 .app-header-right {
   display: flex;
+  align-items: center;
 }
 
-.language-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.language-selector span {
-  opacity: 0.85;
-}
-
-.language-selector select {
-  color: #333;
-  border: 1px solid rgba(128, 128, 128, 0.35);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 500;
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.12);
   cursor: pointer;
+  transition: transform 0.15s ease, border 0.2s ease, background 0.2s ease;
 }
 
-.language-selector select option {
-  color: #0f172a;
+.language-toggle:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.18);
 }
 
-.language-selector select:focus {
+.language-toggle:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.28);
+}
+
+.language-flag {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
 }
 
 .app-headline {
@@ -201,6 +200,17 @@ select:focus {
 .member-card h4 {
   margin: 0;
   font-size: 16px;
+}
+
+.computed-age-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(28, 95, 156, 0.12);
+  color: #1c3d7a;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .form-error {
@@ -458,6 +468,10 @@ select:focus {
   padding: 18px 24px;
   text-align: center;
   font-size: 14px;
+}
+
+.app-footer .footer-line {
+  margin: 4px 0;
 }
 
 @media (max-width: 640px) {

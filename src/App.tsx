@@ -14,7 +14,7 @@ const initialHousehold: HouseholdFormValues = {
   zipCode: "",
   householdIncome: 0,
   memberQuantity: 1,
-  members: [{ age: 0, female: false }],
+  members: [{ age: 0, female: false, dateOfBirth: "" }],
 };
 
 const initialApplicant: PrimaryApplicantForm = {
@@ -24,7 +24,7 @@ const initialApplicant: PrimaryApplicantForm = {
 };
 
 const App: React.FC = () => {
-  const { t, language, setLanguage, languages } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
 
   const [step, setStep] = useState<WizardStep>("household");
   const [household, setHousehold] =
@@ -58,20 +58,13 @@ const App: React.FC = () => {
     setStep("household");
   };
 
-  const handleLanguageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setLanguage(event.target.value as Language);
-  };
-  const handleLanguageChange2 = (lang: string) => {
-    setLanguage(lang as Language);
-  };
-
   const handleToggleLanguage = () => {
-    // alterna entre inglés y español
     setLanguage(language === "es" ? "en" : "es");
   };
   const nextLanguage: Language = language === "es" ? "en" : "es";
+  const toggleLabel = t("header.languageToggleLabel", {
+    language: t(`header.options.${nextLanguage}`),
+  });
 
   return (
     <div className="app-shell">
@@ -90,19 +83,18 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="app-header-right">
-            <label className="language-selector">
-              {/* <span>{t("header.languageLabel")}</span> */}
-              <button
-                onClick={handleToggleLanguage}
-                className="rounded-full border-2 border-transparent hover:border-blue-400 hover:scale-105 transition"
-              >
-                <img
-                  src={`/media/flags/${nextLanguage}.png`}
-                  alt={nextLanguage}
-                  className="w-6 h-6 rounded-full"
-                />
-              </button>
-            </label>
+            <button
+              type="button"
+              onClick={handleToggleLanguage}
+              className="language-toggle"
+              aria-label={toggleLabel}
+            >
+              <img
+                src={`/media/flags/${nextLanguage}.png`}
+                alt={t(`header.options.${nextLanguage}`)}
+                className="language-flag"
+              />
+            </button>
           </div>
         </div>
       </header>
@@ -149,9 +141,9 @@ const App: React.FC = () => {
       </main>
 
       <footer className="app-footer">
-        <div className="line1">{t("footer.line1")}</div>
-        <div className="line2">{t("footer.line2")}</div>
-        <div className="line3">{t("footer.line3")}</div>
+        <div className="footer-line">{t("footer.line1")}</div>
+        <div className="footer-line">{t("footer.line2")}</div>
+        <div className="footer-line">{t("footer.line3")}</div>
       </footer>
     </div>
   );
