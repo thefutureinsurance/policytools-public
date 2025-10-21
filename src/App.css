@@ -21,7 +21,7 @@ body {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #FFF, #ecf2f7);
+  background: linear-gradient(135deg, #fff, #ecf2f7);
   color: #333;
   padding: 12px 32px;
   box-shadow: 0 4px 16px rgba(11, 59, 120, 0.2);
@@ -133,7 +133,7 @@ body {
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .form-section h3,
@@ -205,18 +205,55 @@ select:focus {
 .computed-age-label {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 2px 12px;
   border-radius: 999px;
   background: rgba(28, 95, 156, 0.12);
   color: #1c3d7a;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 1px;
 }
 
 .form-error {
   margin: 0;
   color: #b91c1c;
   font-weight: 600;
+}
+
+.zip-autocomplete {
+  position: relative;
+}
+
+.zip-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 12;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 4px 0 0;
+  padding: 8px 0;
+  background: #ffffff;
+  border: 1px solid rgba(28, 95, 156, 0.18);
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(28, 95, 156, 0.18);
+  list-style: none;
+}
+
+.zip-suggestions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.zip-suggestions li:hover,
+.zip-suggestions li:focus {
+  background: rgba(28, 95, 156, 0.08);
 }
 
 .status-message {
@@ -272,7 +309,7 @@ select:focus {
 
 .plan-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
   max-height: 460px;
   overflow-y: auto;
@@ -301,6 +338,8 @@ select:focus {
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
+  border-bottom: 1px solid var(--bs-card-border-color);
+  padding-bottom: 5px;
 }
 
 .plan-carrier {
@@ -379,6 +418,14 @@ select:focus {
   cursor: pointer;
 }
 
+.modal-header {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+  padding-bottom: 7px !important;
+}
+
 .modal-header h3 {
   margin: 0;
 }
@@ -425,6 +472,8 @@ select:focus {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  border-top: 1px solid var(--bs-border-color);
+  padding-top: 5px;
 }
 
 .selected-plan {
@@ -505,4 +554,86 @@ select:focus {
   .modal-card {
     padding: 24px 18px 18px;
   }
+}
+
+.household {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.date-of-birth-label {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+label.form-label {
+  font-weight: bold;
+  margin-bottom: 0px;
+}
+.loading-plans {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #1c5f9c;
+  font-weight: 500;
+}
+.title-plan {
+  color: #1c3d7a;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+.plan-price-selected {
+  text-align: center;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 5px;
+  padding: 4px 8px;
+  max-width: 100px;
+  background-color: var(--bs-card-cap-bg);
+}
+.plan-price {
+  text-align: center;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 5px;
+  padding: 4px 8px;
+  max-width: 70px;
+  background-color: var(--bs-card-cap-bg);
+}
+.plan-carrier {
+  margin: 4px 0 0;
+  color: var(--bs-blue);
+  font-size: 15px;
+  font-weight: 500;
+  font-variant: all-small-caps;
+  line-height: 1em;
+}
+
+.member-card-title {
+  font-size: 1.05em;
+  margin-bottom: 0px !important;
+  font-weight: bold;
+  text-align: center;
+}
+
+.contact-details {
+  border: 1px solid var(--bs-border-color);
+  padding: 10px 10px;
+  border-radius: 10px;
+  background-color: aliceblue;
+}
+
+.confirmation-form-sections {
+  display: flex;
+  gap: 1em;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 5px;
+  background-color: aliceblue;
 }

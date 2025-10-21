@@ -18,16 +18,8 @@ export const PlanModal: React.FC<PlanModalProps> = ({
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true">
       <div className="modal-card">
-        <button
-          type="button"
-          className="modal-close"
-          onClick={onClose}
-          aria-label={t("buttons.close")}
-        >
-          ×
-        </button>
         <header className="modal-header">
-          <h3>{plan.name}</h3>
+          <h5 className="title-plan">{plan.name}</h5>
           <p className="plan-carrier">{plan.carrier}</p>
         </header>
         <section className="modal-body">

@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {
-  HouseholdFormValues,
-  Plan,
-  PrimaryApplicantForm,
-} from "../types";
+import { Plan, PrimaryApplicantForm } from "../types";
 import { useTranslation } from "../i18n/I18nProvider";
+import { PublicQuoteFormState } from "../gql/types/IPQuote";
 
 interface HouseholdDetailsPageProps {
-  household: HouseholdFormValues;
+  household: PublicQuoteFormState;
   selectedPlan: Plan;
   initialApplicant: PrimaryApplicantForm;
-  onSubmit: (values: PrimaryApplicantForm) => void;
+  onSubmit: (values: PrimaryApplicantForm) => void | Promise<void>;
   onBack: () => void;
+  isSubmitting?: boolean;
+  apiError?: string | null;
 }
 
 export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
@@ -20,6 +19,8 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
   initialApplicant,
   onSubmit,
   onBack,
+  isSubmitting = false,
+  apiError = null,
 }) => {
   const { t } = useTranslation();
   const [formValues, setFormValues] =
@@ -30,17 +31,14 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
     setFormValues(initialApplicant);
   }, [initialApplicant]);
 
-  const handleChange = (
-    field: keyof PrimaryApplicantForm,
-    value: string
-  ) => {
+  const handleChange = (field: keyof PrimaryApplicantForm, value: string) => {
     setFormValues((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
@@ -54,10 +52,31 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
       return;
     }
 
-    onSubmit({
+    if (!formValues.phone.trim()) {
+      setError(t("detailsPage.errors.phone"));
+      return;
+    }
+
+    const emailValue = formValues.email.trim();
+    if (!emailValue) {
+      setError(t("detailsPage.errors.email"));
+      return;
+    }
+
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(emailValue)) {
+      setError(t("detailsPage.errors.email"));
+      return;
+    }
+
+    await onSubmit({
       firstName: formValues.firstName.trim(),
       lastName: formValues.lastName.trim(),
       dateOfBirth: formValues.dateOfBirth,
+      phone: formValues.phone.trim(),
+      email: emailValue,
+      message: formValues.message.trim(),
     });
   };
 
@@ -74,13 +93,13 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
       </div>
 
       <section className="form-section">
-        <h3>{t("detailsPage.selectedPlanTitle")}</h3>
+        <h5>{t("detailsPage.selectedPlanTitle")}</h5>
         <div className="selected-plan">
           <div>
-            <h4>{selectedPlan.name}</h4>
+            <h5 className="title-plan">{selectedPlan.name}</h5>
             <p className="plan-carrier">{selectedPlan.carrier}</p>
           </div>
-          <div>
+          <div className="plan-price-selected">
             <span className="meta-label">
               {t("planSelection.monthlyPremium")}
             </span>
@@ -90,11 +109,11 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
       </section>
 
       <section className="form-section">
-        <h3>{t("detailsPage.householdSummaryTitle")}</h3>
+        <h5>{t("detailsPage.householdSummaryTitle")}</h5>
         <div className="summary-grid">
           <div>
             <span className="meta-label">{t("detailsPage.incomeLabel")}</span>
-            <strong>${household.householdIncome.toLocaleString()}</strong>
+            <strong>${household.householdIncomeTxt.toLocaleString()}</strong>
           </div>
           <div>
             <span className="meta-label">{t("detailsPage.membersLabel")}</span>
@@ -103,27 +122,31 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
         </div>
 
         <ul className="members-summary">
-          {household.members.map((member, index) => (
-            <li key={`summary-member-${index}`}>
-              {t("detailsPage.memberSummary", {
-                number: index + 1,
-                age: member.age,
-                gender: t(member.female ? "genders.female" : "genders.male"),
-              })}
-            </li>
-          ))}
+          {household.members.map(
+            (member: { age: any; female: any }, index: number) => (
+              <li key={`summary-member-${index}`}>
+                {t("detailsPage.memberSummary", {
+                  number: index + 1,
+                  age: member.age,
+                  gender: t(member.female ? "genders.female" : "genders.male"),
+                })}
+              </li>
+            )
+          )}
         </ul>
       </section>
 
-      <section className="form-section">
-        <h3>{t("detailsPage.applicantTitle")}</h3>
+      <section className="form-section  contact-details">
+        <h5>{t("detailsPage.applicantTitle")}</h5>
         <div className="form-grid">
           <label className="form-field">
             <span>{t("detailsPage.firstNameLabel")}</span>
             <input
               type="text"
               value={formValues.firstName}
-              onChange={(event) => handleChange("firstName", event.target.value)}
+              onChange={(event) =>
+                handleChange("firstName", event.target.value)
+              }
               placeholder={t("detailsPage.firstNamePlaceholder")}
             />
           </label>
@@ -148,13 +171,49 @@ export const HouseholdDetailsPage: React.FC<HouseholdDetailsPageProps> = ({
               }
             />
           </label>
+
+          <label className="form-field">
+            <span>{t("detailsPage.phoneLabel")}</span>
+            <input
+              type="tel"
+              value={formValues.phone}
+              onChange={(event) => handleChange("phone", event.target.value)}
+              placeholder={t("detailsPage.phonePlaceholder")}
+            />
+          </label>
+
+          <label className="form-field">
+            <span>{t("detailsPage.emailLabel")}</span>
+            <input
+              type="email"
+              value={formValues.email}
+              onChange={(event) => handleChange("email", event.target.value)}
+              placeholder={t("detailsPage.emailPlaceholder")}
+            />
+          </label>
         </div>
+
+        <label className="form-field">
+          <span>{t("detailsPage.messageLabel")}</span>
+          <textarea
+            value={formValues.message}
+            onChange={(event) => handleChange("message", event.target.value)}
+            placeholder={t("detailsPage.messagePlaceholder")}
+            rows={4}
+          />
+        </label>
       </section>
 
-      {error && <p className="form-error">{error}</p>}
+      {(error || apiError) && (
+        <p className="form-error">{error || apiError}</p>
+      )}
 
       <div className="form-actions">
-        <button type="submit" className="button button-primary">
+        <button
+          type="submit"
+          className="button button-primary"
+          disabled={isSubmitting}
+        >
           {t("buttons.submitApplicant")}
         </button>
       </div>

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { PlanModal } from "../components/PlanModal";
 import { fetchPlansForHousehold } from "../services/planService";
-import { HouseholdFormValues, Plan } from "../types";
 import { useTranslation } from "../i18n/I18nProvider";
-
+import { PublicQuoteFormState } from "../gql/types/IPQuote";
+import { Plan } from "../types";
+import { Spinner } from "react-bootstrap";
 interface PlanSelectionPageProps {
-  household: HouseholdFormValues;
+  household: PublicQuoteFormState;
   onPlanSelect: (plan: Plan) => void;
   onBack: () => void;
 }
@@ -27,7 +28,7 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
       : t("planSelection.memberWordPlural");
 
   const householdChipText = t("planSelection.householdChip", {
-    zipCode: household.zipCode || "—",
+    zipCode: household.zipcodeByZip?.zipCode || "—",
     count: household.memberQuantity,
     label: memberLabel,
   });
@@ -81,8 +82,15 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
 
       <p className="section-helper">{t("planSelection.helper")}</p>
 
-      {isLoading && (
+      {/* {isLoading && (
         <p className="status-message">{t("planSelection.loading")}</p>
+      )} */}
+
+      {isLoading && (
+        <div className="loading-plans">
+          <Spinner animation="border" role="status" />
+          <span>{t("planSelection.loading")}</span>
+        </div>
       )}
 
       {hasError && <p className="form-error">{t("planSelection.error")}</p>}
@@ -97,8 +105,8 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
               onClick={() => setActivePlan(plan)}
             >
               <div className="plan-card-header">
-                <div>
-                  <h3>{plan.name}</h3>
+                <div className="plan-info">
+                  <h5 className="title-plan">{plan.name}</h5>
                   <p className="plan-carrier">{plan.carrier}</p>
                 </div>
                 <div className="plan-price">

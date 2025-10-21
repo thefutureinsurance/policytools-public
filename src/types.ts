@@ -1,15 +1,5 @@
-export interface HouseholdMember {
-  age: number;
-  female: boolean;
-  dateOfBirth: string;
-}
-
-export interface HouseholdFormValues {
-  zipCode: string;
-  householdIncome: number;
-  memberQuantity: number;
-  members: HouseholdMember[];
-}
+import { IPMemberInfoQuote } from "./gql/types/IPMemberInfoQuote";
+import { ZipcodeByZip } from "./gql/types/IResponseZipCode";
 
 export interface Plan {
   id: string;
@@ -26,4 +16,7 @@ export interface PrimaryApplicantForm {
   firstName: string;
   lastName: string;
   dateOfBirth: string;
+  phone: string;
+  email: string;
+  message: string;
 }

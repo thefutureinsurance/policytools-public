@@ -6,6 +6,7 @@ import App from "./App";
 import { I18nProvider } from "./i18n/I18nProvider";
 import client from "./apolloClient";
 import reportWebVitals from "./reportWebVitals";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
