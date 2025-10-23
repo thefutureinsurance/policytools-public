@@ -57,6 +57,8 @@ const calculateAge = (dateString: string): number | null => {
   return age;
 };
 
+const MAX_MEMBERS = 8;
+
 const mapInitialValues = (
   values: PublicQuoteFormState
 ): PublicQuoteFormState => {
@@ -279,6 +281,31 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
     [formState.memberQuantity, t]
   );
 
+  const applyMemberQuantity = (nextQuantity: number) => {
+    const boundedQuantity = Math.min(Math.max(nextQuantity, 1), MAX_MEMBERS);
+
+    setFormState((prev) => {
+      const currentMembers = prev.members.slice(0, boundedQuantity);
+      const missingMembers = boundedQuantity - currentMembers.length;
+
+      if (missingMembers > 0) {
+        currentMembers.push(
+          ...Array.from({ length: missingMembers }, () => ({
+            dateOfBirth: "",
+            female: false,
+            age: null,
+          }))
+        );
+      }
+
+      return {
+        ...prev,
+        memberQuantity: boundedQuantity,
+        members: currentMembers,
+      };
+    });
+  };
+
   const handleHouseholdFieldChange = (
     key: "zipCode" | "householdIncome" | "householdIncomeTxt",
     value: string
@@ -311,28 +338,26 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
   };
 
   const handleMemberQuantityChange = (value: string) => {
-    const nextQuantity = Math.min(Math.max(Number(value) || 1, 1), 8);
+    const numericValue = Number(value);
 
-    setFormState((prev) => {
-      const currentMembers = prev.members.slice(0, nextQuantity);
-      const difference = nextQuantity - currentMembers.length;
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      applyMemberQuantity(1);
+      return;
+    }
 
-      if (difference > 0) {
-        currentMembers.push(
-          ...Array.from({ length: difference }, () => ({
-            dateOfBirth: "",
-            female: false,
-            age: null,
-          }))
-        );
+    if (numericValue > MAX_MEMBERS) {
+      const fallbackDigit = Number(value.trim().slice(-1));
+      if (
+        Number.isFinite(fallbackDigit) &&
+        fallbackDigit >= 1 &&
+        fallbackDigit <= MAX_MEMBERS
+      ) {
+        applyMemberQuantity(fallbackDigit);
+        return;
       }
+    }
 
-      return {
-        ...prev,
-        memberQuantity: nextQuantity,
-        members: currentMembers,
-      };
-    });
+    applyMemberQuantity(numericValue);
   };
 
   const handleMemberDateChange = (index: number, value: string) => {
@@ -649,7 +674,7 @@ export const HouseholdInfoPage: React.FC<HouseholdInfoPageProps> = ({
                   placeholder={t("householdForm.memberQuantityLabel")}
                   name="memberQuantityLabel"
                   min={1}
-                  max={8}
+                  max={MAX_MEMBERS}
                   value={formState.memberQuantity}
                   onChange={(event) =>
                     handleMemberQuantityChange(event.target.value)

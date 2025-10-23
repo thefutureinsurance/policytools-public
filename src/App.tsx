@@ -67,12 +67,10 @@ const App: React.FC = () => {
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [signingLink, setSigningLink] = useState<string | null>(null);
 
-  const [
-    publicCreateLead,
-    { loading: isSubmittingLead },
-  ] = useMutation<PublicCreateLeadResponse, PublicCreateLeadVariables>(
-    PUBLIC_CREATE_LEAD
-  );
+  const [publicCreateLead, { loading: isSubmittingLead }] = useMutation<
+    PublicCreateLeadResponse,
+    PublicCreateLeadVariables
+  >(PUBLIC_CREATE_LEAD);
 
   const leadConfig = useMemo(() => {
     const stagePipelineId = process.env.REACT_APP_PUBLIC_STAGE_PIPELINE_ID
@@ -140,7 +138,8 @@ const App: React.FC = () => {
       );
     }
 
-    const fullName = `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
+    const fullName =
+      `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
     const effectiveDate = new Date(
       new Date().getFullYear(),
       new Date().getMonth() + 1,
@@ -149,7 +148,7 @@ const App: React.FC = () => {
       .toISOString()
       .split("T")[0];
 
-   const metadata = {
+    const metadata = {
       planId: plan.id,
       planName: plan.name,
       carrier: plan.carrier,
@@ -217,7 +216,11 @@ const App: React.FC = () => {
     setSubmissionError(null);
     setSigningLink(null);
     try {
-      const leadPayload = buildLeadPayload(values, selectedPlan, household) as Record<string, unknown>;
+      const leadPayload = buildLeadPayload(
+        values,
+        selectedPlan,
+        household
+      ) as Record<string, unknown>;
       const { data } = await publicCreateLead({
         variables: {
           token: process.env.REACT_APP_PUBLIC_GRAPHQL_TOKEN ?? "",
@@ -283,6 +286,10 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="app-header-right">
+            <div className="header-info-call">
+              <span className="header-callus">{t("header.callus")}:</span>
+              <span className="header-phone">{t("header.phone")}</span>
+            </div>
             <button
               type="button"
               onClick={handleToggleLanguage}

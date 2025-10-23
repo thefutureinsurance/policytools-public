@@ -102,12 +102,21 @@ const resolveInitialLanguage = (): Language => {
   return FALLBACK_LANGUAGE;
 };
 
-export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({
+interface I18nProviderProps {
+  children: React.ReactNode;
+  initialLanguage?: Language;
+}
+
+export const I18nProvider: React.FC<I18nProviderProps> = ({
   children,
+  initialLanguage,
 }) => {
-  const [language, setLanguageState] = useState<Language>(() =>
-    resolveInitialLanguage()
-  );
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (initialLanguage && SUPPORTED_LANGUAGES.includes(initialLanguage)) {
+      return initialLanguage;
+    }
+    return resolveInitialLanguage();
+  });
 
   const setLanguage = useCallback((nextLanguage: Language) => {
     const available = SUPPORTED_LANGUAGES.includes(nextLanguage)

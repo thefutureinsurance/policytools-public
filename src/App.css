@@ -32,7 +32,7 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  max-width: 960px;
+  max-width: 1020px;
   margin: 0 auto;
 }
 
@@ -50,7 +50,8 @@ body {
 
 .app-header-right {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  flex-direction: column;
 }
 
 .language-toggle {
@@ -636,4 +637,17 @@ label.form-label {
   padding: 12px;
   border-radius: 5px;
   background-color: aliceblue;
+}
+
+span.header-callus {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #1c5f9c;
+}
+
+span.header-phone {
+    font-size: 0.9em;
+    font-weight: bold;
+    font-style: italic;
+    margin-left: 5px;
 }
