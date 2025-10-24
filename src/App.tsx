@@ -288,7 +288,9 @@ const App: React.FC = () => {
           <div className="app-header-right">
             <div className="header-info-call">
               <span className="header-callus">{t("header.callus")}:</span>
-              <span className="header-phone">{t("header.phone")}</span>
+              <span className="header-phone">
+                <a href={`tel:${t("header.phone")}`}>{t("header.phone")}</a>
+              </span>
             </div>
             <button
               type="button"
