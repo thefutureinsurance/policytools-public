@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { PlanModal } from "../components/PlanModal";
-import { fetchPlansForHousehold } from "../services/planService";
-import { useTranslation } from "../i18n/I18nProvider";
-import { PublicQuoteFormState } from "../gql/types/IPQuote";
-import { Plan } from "../types";
 import { Spinner } from "react-bootstrap";
+import { PlanModal } from "../components/PlanModal";
+import { fetchPlansForMetadata } from "../services/planService";
+import { useTranslation } from "../i18n/I18nProvider";
+import { Plan } from "../types";
+import { LeadWizardMetadata } from "../types/leadWizard";
+
 interface PlanSelectionPageProps {
-  household: PublicQuoteFormState;
-  onPlanSelect: (plan: Plan) => void;
+  metadata: LeadWizardMetadata;
+  onPlanSelect: (
+    plan: Plan,
+    context: { fetchedAt: string; count: number }
+  ) => void;
   onBack: () => void;
+  onPlansLoaded?: (plans: Plan[]) => void;
 }
 
 export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
-  household,
+  metadata,
   onPlanSelect,
   onBack,
+  onPlansLoaded,
 }) => {
   const { t, language } = useTranslation();
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -23,13 +29,13 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
   const [activePlan, setActivePlan] = useState<Plan | null>(null);
 
   const memberLabel =
-    household.memberQuantity === 1
+    (metadata.household.size ?? metadata.members.length) === 1
       ? t("planSelection.memberWordSingular")
       : t("planSelection.memberWordPlural");
 
   const householdChipText = t("planSelection.householdChip", {
-    zipCode: household.zipcodeByZip?.zipCode || "—",
-    count: household.memberQuantity,
+    zipCode: metadata.household.zipCode || "—",
+    count: metadata.household.size ?? metadata.members.length,
     label: memberLabel,
   });
 
@@ -42,10 +48,11 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
         setIsLoading(true);
         setHasError(false);
 
-        const fetchedPlans = await fetchPlansForHousehold(household, language);
+        const fetchedPlans = await fetchPlansForMetadata(metadata, language);
 
         if (isMounted) {
           setPlans(fetchedPlans);
+          onPlansLoaded?.(fetchedPlans);
         }
       } catch (loadError) {
         if (isMounted) {
@@ -63,7 +70,7 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [household, language]);
+  }, [metadata, language, onPlansLoaded]);
 
   return (
     <div className="card">
@@ -122,14 +129,14 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
                 ))}
               </ul>
               <div className="plan-meta">
-                <span>
-                  {t("planSelection.deductible")}: $
+                <div>
+                  <label>{t("planSelection.deductible")}:</label>$
                   {plan.deductible.toLocaleString()}
-                </span>
-                <span>
-                  {t("planSelection.outOfPocketMax")}: $
+                </div>
+                <div>
+                  <label>{t("planSelection.outOfPocketMax")}:</label> $
                   {plan.outOfPocketMax.toLocaleString()}
-                </span>
+                </div>
               </div>
               <button
                 type="button"
@@ -152,7 +159,10 @@ export const PlanSelectionPage: React.FC<PlanSelectionPageProps> = ({
           onClose={() => setActivePlan(null)}
           onSelect={(plan) => {
             setActivePlan(null);
-            onPlanSelect(plan);
+            onPlanSelect(plan, {
+              fetchedAt: new Date().toISOString(),
+              count: plans.length,
+            });
           }}
         />
       )}

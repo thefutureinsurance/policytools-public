@@ -7,6 +7,8 @@ import {
   MarketplacePlan,
   MarketplaceResponse,
 } from "../gql/types/IMarketplace";
+import { LeadWizardMetadata } from "../types/leadWizard";
+import { ZipcodeByZip } from "../gql/types/IResponseZipCode";
 
 interface PublicMarketplace2Response {
   publicMarketplace2: string | null;
@@ -105,6 +107,41 @@ const buildPeoplePayload = (household: PublicQuoteFormState) => {
       doesNotCohabitate: false,
     };
   });
+};
+
+const buildQuoteStateFromMetadata = (
+  metadata: LeadWizardMetadata
+): PublicQuoteFormState => {
+  const members = metadata.members.map((member) => ({
+    age: calculateAge(member.birthDate ?? "") ?? null,
+    female: member.gender === "F",
+    dateOfBirth: member.birthDate ?? "",
+  }));
+
+  const zipcode: ZipcodeByZip | null = metadata.household.zipCode
+    ? {
+        id: metadata.household.zipCode,
+        zipCode: metadata.household.zipCode,
+        countyFips: metadata.household.countyFips ?? "",
+        countyFipsAll: metadata.household.countyFips ?? "",
+        countyNamesAll: metadata.household.countyName ?? "",
+        stateId: metadata.household.stateId ?? "",
+        stateName: metadata.household.stateName ?? "",
+        countyName: metadata.household.countyName ?? "",
+        city: "",
+      }
+    : null;
+
+  return {
+    zipCode: metadata.household.zipCode,
+    zipcodeByZip: zipcode,
+    householdIncome: metadata.household.income ?? 0,
+    householdIncomeTxt: metadata.household.income
+      ? String(metadata.household.income)
+      : "",
+    memberQuantity: members.length || 1,
+    members,
+  };
 };
 
 const mapMarketplacePlanToPublicPlan = (plan: MarketplacePlan): Plan => {
@@ -268,4 +305,12 @@ export const fetchPlansForHousehold = async (
       resolve(tailoredPlans);
     }, 700);
   });
+};
+
+export const fetchPlansForMetadata = async (
+  metadata: LeadWizardMetadata,
+  language: Language = "es"
+): Promise<Plan[]> => {
+  const household = buildQuoteStateFromMetadata(metadata);
+  return fetchPlansForHousehold(household, language);
 };
